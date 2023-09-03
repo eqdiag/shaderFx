@@ -16,6 +16,14 @@ Viewer::Viewer():
 	mWaxShaderEnabled{true},
 	mIridescentEnabled{false},
 	mSphereMorphEnabled{false},
+	mNoPostProcessEnabled{true},
+	mInvertEnabled{false},
+	mVignetteEnabled{false},
+	mBlurEnabled{false},
+	mSobelEnabled{false},
+	mNoiseEnabled{false},
+	mBlurSize{3},
+	mNoiseStrength{30.0},
 	mMeshIndex{0},
 	mTimer{50}
 {
@@ -25,6 +33,10 @@ Viewer::Viewer():
 Viewer::~Viewer()
 {
 	glDeleteTextures(1, &mTex);
+	glDeleteTextures(1, &mFrameBufferTex);
+	glDeleteRenderbuffers(1, &mFrameBufferDepth);
+	glDeleteVertexArrays(1, &mPostVAO);
+	glDeleteFramebuffers(1, &mFrameBuffer);
 }
 
 void Viewer::init()
@@ -34,6 +46,7 @@ void Viewer::init()
 	mWaxShader.init(SHADER_DIR, "wax.vs", "wax.fs");
 	mIridescentShader.init(SHADER_DIR, "iri.vs", "iri.fs");
 	mSphereMorphShader.init(SHADER_DIR, "morph.vs", "wax.fs");
+	mPostProcessShader.init(SHADER_DIR, "post.vs", "post.fs");
 
 
 	stbi_set_flip_vertically_on_load(true);
@@ -68,7 +81,44 @@ void Viewer::init()
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	stbi_image_free(img);
+
+	//Create framebuffer
+	//Attach a color attachment and a depth attachment
+	glGenTextures(1, &mFrameBufferTex);
+
+	glBindTexture(GL_TEXTURE_2D, mFrameBufferTex);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mWindowWidth, mWindowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glGenRenderbuffers(1, &mFrameBufferDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, mFrameBufferDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mWindowWidth, mWindowHeight);
+
+	glGenFramebuffers(1, &mFrameBuffer);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+
+	//Attach color attachment here
+	glFramebufferTexture2D(
+		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,mFrameBufferTex, 0
+	);
+
+	//Attach depth buffer
+	glFramebufferRenderbuffer(
+		GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,mFrameBufferDepth
+	);
+
 	
+
+	glGenVertexArrays(1, &mPostVAO);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "not complete\n";
+	}
+
 	
 	mMesh = mLoader.loadMesh(MODEL_DIR, "cow.obj");
 	mCamera = std::make_unique<core::ArcCamera>(mMesh->getCentroid(), 2.0 * mMesh->getBoundingRadius());
@@ -97,6 +147,12 @@ void Viewer::init()
 	mSphereMorphShader.setUniformMat4("view", mViewMatrix.getRawData());
 	mSphereMorphShader.setUniformMat4("proj", mProjMatrix.getRawData());
 
+	mPostProcessShader.use();
+	mPostProcessShader.setUniformFloat("dx", 1.0f / static_cast<float>(mWindowWidth));
+	mPostProcessShader.setUniformFloat("dy", 1.0f / static_cast<float>(mWindowHeight));
+	mPostProcessShader.setUniformInt("tex", 0);
+	mPostProcessShader.setUniformFloat("noiseStrength", mNoiseStrength);
+
 	
 
 	glClearColor(0.22f, 0.22f, 0.22f, 1.0f);
@@ -115,9 +171,18 @@ void Viewer::update()
 
 void Viewer::render()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 	mViewMatrix = mCamera->getViewMatrix();
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+	glBindTexture(GL_TEXTURE_2D, mTex);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 
 	//Wax shader
@@ -136,14 +201,37 @@ void Viewer::render()
 		mSphereMorphShader.use();
 		mSphereMorphShader.setUniformMat4("view", mViewMatrix.getRawData());
 		mSphereMorphShader.setUniformFloat("time", mTimer.getTimeElapsed());
-
 	}
 
 
-	//Sphere morph shader
-
-
 	mMesh->Render();
+
+
+
+
+	//Post-process here
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_DEPTH_TEST);
+
+
+	mPostProcessShader.use();
+
+	mPostProcessShader.setUniformBool("invertEnabled", mInvertEnabled);
+	mPostProcessShader.setUniformBool("vignetteEnabled", mVignetteEnabled);
+	mPostProcessShader.setUniformBool("blurEnabled", mBlurEnabled);
+	mPostProcessShader.setUniformBool("sobelEnabled", mSobelEnabled);
+	mPostProcessShader.setUniformBool("noiseEnabled", mNoiseEnabled);
+	mPostProcessShader.setUniformInt("blurSize", mBlurSize);
+	mPostProcessShader.setUniformFloat("time", mTimer.getTimeElapsed());
+	mPostProcessShader.setUniformFloat("noiseStrength",mNoiseStrength);
+
+
+	glActiveTexture(GL_TEXTURE0);
+	mPostProcessShader.setUniformInt("tex", 0);
+	glBindTexture(GL_TEXTURE_2D, mFrameBufferTex);
+	glBindVertexArray(mPostVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
 
 	mTimer.tick();
 }

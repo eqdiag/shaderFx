@@ -67,11 +67,67 @@ void ViewerUi::update()
         if (ImGui::CollapsingHeader("Post-Processing Effects", ImGuiTreeNodeFlags_DefaultOpen))
         {
 
-            //ImGui::ColorEdit3("Emissive Color", mViewer.mMaterial.mEmissiveColor.getRawData());
+            if (ImGui::Checkbox("None", &mViewer.mNoPostProcessEnabled)) {
+                mViewer.mInvertEnabled = false;
+                mViewer.mVignetteEnabled = false;
+                mViewer.mBlurEnabled = false;
+                mViewer.mSobelEnabled = false;
+                mViewer.mNoiseEnabled = false;
+            }
+
+            if (ImGui::Checkbox("Invert Effect", &mViewer.mInvertEnabled)) {
+                mViewer.mNoPostProcessEnabled = false;
+                mViewer.mVignetteEnabled = false;
+                mViewer.mBlurEnabled = false;
+                mViewer.mSobelEnabled = false;
+                mViewer.mNoiseEnabled = false;
+            }
+
+            if (ImGui::Checkbox("Vignette Effect", &mViewer.mVignetteEnabled)) {
+                mViewer.mNoPostProcessEnabled = false;
+                mViewer.mBlurEnabled = false;
+                mViewer.mSobelEnabled = false;
+                mViewer.mNoiseEnabled = false;
+                mViewer.mInvertEnabled = false;
+            }
+
+            if (ImGui::Checkbox("Blur Effect", &mViewer.mBlurEnabled)) {
+                mViewer.mNoPostProcessEnabled = false;
+                mViewer.mVignetteEnabled = false;
+                mViewer.mSobelEnabled = false;
+                mViewer.mNoiseEnabled = false;
+                mViewer.mInvertEnabled = false;
+            }
+
+            ImGui::SameLine();
+
+            ImGui::SliderInt("Filter Size", &mViewer.mBlurSize, 3, 15);
+
+            if (ImGui::Checkbox("Sobel Effect", &mViewer.mSobelEnabled)) {
+                mViewer.mNoPostProcessEnabled = false;
+                mViewer.mVignetteEnabled = false;
+                mViewer.mBlurEnabled = false;
+                mViewer.mNoiseEnabled = false;
+                mViewer.mInvertEnabled = false;
+            }
 
 
 
-            ImGui::End();
+            if (ImGui::Checkbox("Noisy Effect", &mViewer.mNoiseEnabled)) {
+                mViewer.mNoPostProcessEnabled = false;
+                mViewer.mVignetteEnabled = false;
+                mViewer.mSobelEnabled = false;
+                mViewer.mBlurEnabled = false;
+                mViewer.mInvertEnabled = false;
+            }
+
+            ImGui::SameLine();
+
+            ImGui::SliderFloat("Noise Strength", &mViewer.mNoiseStrength,10.0,100.0);
+
         }
+
     }
+    ImGui::End();
+
 }

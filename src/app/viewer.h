@@ -48,10 +48,21 @@ public:
 	bool mIridescentEnabled;
 	bool mSphereMorphEnabled;
 
+	bool mNoPostProcessEnabled;
+	bool mInvertEnabled;
+	bool mVignetteEnabled;
+	bool mBlurEnabled;
+	bool mSobelEnabled;
+	bool mNoiseEnabled;
+
+	int mBlurSize;
+	float mNoiseStrength;
+
 	//Shaders
 	core::Shader mWaxShader;
 	core::Shader mIridescentShader;
 	core::Shader mSphereMorphShader;
+	core::Shader mPostProcessShader;
 
 	//Shader uniforms
 	math::Mat4 mModelMatrix{};
@@ -72,6 +83,11 @@ private:
 
 	//Wax texture
 	GLuint mTex;
+
+	GLuint mFrameBuffer;
+	GLuint mFrameBufferTex;
+	GLuint mFrameBufferDepth;
+	GLuint mPostVAO;
 
 	core::AssetLoader mLoader{};
 
