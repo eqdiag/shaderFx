@@ -26,7 +26,7 @@ make
   * `mouseScroll` Zoom camera in/out
 
 ## Vertex/Fragment Shader Effects
-  *  `Wax` Applies a !["matcap"]([https://digitalrune.github.io/DigitalRune-Documentation/html/9a8c8b37-b996-477a-aeab-5d92714be3ca.htm](https://digitalrune.github.io/DigitalRune-Documentation/html/9a8c8b37-b996-477a-aeab-5d92714be3ca.htm]) effect.
+  *  `Wax` Applies a !["matcap"](https://digitalrune.github.io/DigitalRune-Documentation/html/9a8c8b37-b996-477a-aeab-5d92714be3ca.htm) effect.
   *  `Iridescence`  A rainbow iridescence effect that changes in time.
   *  `Sphere Morph`  A linear morph between a mesh and unit sphere to demonstrate vertex shader effects.
 
