@@ -38,6 +38,7 @@ make
   *  `Noise`  A "wavy" effect achieved using a noise source.
 
 # Screenshots
+## Main Application
 ![App](/screenshots/main.PNG "Application")
 ## Wax 
 ![Wax](/screenshots/wax.gif "Wax")
