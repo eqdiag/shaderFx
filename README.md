@@ -39,13 +39,21 @@ make
 
 # Screenshots
 ![App](/screenshots/main.PNG "Application")
+## Wax 
 ![Wax](/screenshots/wax.gif "Wax")
+## Iridescence 
 ![Iridescence](/screenshots/iri.gif "Iridescence")
+## Sphere Morph 
 ![Morph](/screenshots/morph.gif "Morph")
+## Color Invert
 ![Invert](/screenshots/invert.gif "Invert")
+## Vignette
 ![Vignette](/screenshots/vignette.gif "Vignette")
+## Blur
 ![Blur](/screenshots/blur.gif "Blur")
+## Sobel Filter
 ![Sobel](/screenshots/sobel.gif "Sobel")
+## Wavy Noise
 ![Noise](/screenshots/noise.gif "Noise")
 
 
